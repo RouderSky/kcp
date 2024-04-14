@@ -13,7 +13,7 @@ namespace TestServer
             Console.WriteLine("Hello World!");
 
             SimpleKcpClient kcpClient = new SimpleKcpClient(40001);
-            kcpClient.kcp.TraceListener = new ConsoleTraceListener();
+            //kcpClient.kcp.TraceListener = new ConsoleTraceListener();		//日志
             Task.Run(async () =>
             {
                 while (true)
@@ -32,11 +32,12 @@ namespace TestServer
             while (true)
             {
                 var res = await client.ReceiveAsync();
+                Console.WriteLine($"收到一条消息，长度为：{res.Length}");
+                //Console.WriteLine($"收到一条消息，内容为：{System.Text.Encoding.UTF8.GetString(res)}");
+
                 var str = System.Text.Encoding.UTF8.GetString(res);
                 if ("发送一条消息" == str)
                 {
-                    Console.WriteLine(str);
-
                     var buffer = System.Text.Encoding.UTF8.GetBytes("回复一条消息");
                     client.SendAsync(buffer, buffer.Length);
                 }

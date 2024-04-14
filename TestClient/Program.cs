@@ -16,7 +16,7 @@ namespace TestClient
             Console.WriteLine("Press F1 send word.......");
 
             SimpleKcpClient kcpClient = new SimpleKcpClient(50001, end);
-            kcpClient.kcp.TraceListener = new ConsoleTraceListener();
+            //kcpClient.kcp.TraceListener = new ConsoleTraceListener();		//日志
             Task.Run(async () =>
             {
                 while (true)
@@ -31,7 +31,12 @@ namespace TestClient
                 var k = Console.ReadKey();
                 if (k.Key == ConsoleKey.F1)
                 {
-                    Send(kcpClient, "发送一条消息");
+                    //Send(kcpClient, System.Text.Encoding.UTF8.GetBytes("发送一条消息"));
+
+                    Byte[] bigBytes = new Byte[128 * 1376];		//默认极限
+                    for (int i = 0; i < bigBytes.Length; i++)
+                        bigBytes[i] = 0xFF;
+                    Send(kcpClient, bigBytes);
                 }
             }
 
@@ -39,10 +44,9 @@ namespace TestClient
         }
 
         static IPEndPoint end = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 40001);
-        static async void Send(SimpleKcpClient client, string v)
+        static async void Send(SimpleKcpClient client, byte[] bytes)
         {
-            var buffer = System.Text.Encoding.UTF8.GetBytes(v);
-            client.SendAsync(buffer, buffer.Length);
+            client.SendAsync(bytes, bytes.Length);
             var resp = await client.ReceiveAsync();
             var respstr = System.Text.Encoding.UTF8.GetString(resp);
             Console.WriteLine($"收到服务器回复:    {respstr}");
